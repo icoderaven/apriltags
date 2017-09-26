@@ -1,10 +1,10 @@
 # apriltags CMake files
 # Humphrey Hu, 2014
 # Originally by Michael Kaess
-
+# Modified to be catkinized by Kumar Shaurya Shankar, 2016
+cmake_minimum_required(VERSION 2.8.3)
 project(apriltags)
-
-cmake_minimum_required(VERSION 2.8)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 # Defaults to release build
 if (NOT DEFINED CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
@@ -13,63 +13,74 @@ if (NOT DEFINED CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
 endif ()
 message(STATUS "Build configuration: ${CMAKE_BUILD_TYPE}")
 
-# Set install paths
-set (LIBRARY_OUTPUT_PATH "${PROJECT_SOURCE_DIR}/lib" CACHE PATH
-  "Target directory for all libraries.")
-set (EXECUTABLE_OUTPUT_PATH "${PROJECT_SOURCE_DIR}/bin" CACHE PATH
-  "Target directory for all executables.")
+## Find catkin macros and libraries
+find_package(catkin REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(Eigen3 REQUIRED)
 
-# Can only use C++0x in Ubuntu 12.04 GCC 4.6
-add_definitions(-Wall -std=c++0x)
+## Add support for C++11, supported in ROS Kinetic and newer
+add_definitions(-std=c++11)
 
-set(apriltags_VERSION_MAJOR 1)
-set(apriltags_VERSION_MINOR 0)
-set(apriltags_VERSION "${apriltags_VERSION_MAJOR}.${apriltags_VERSION_MINOR}")
+###################################
+## catkin specific configuration ##
+###################################
+catkin_package(
+    INCLUDE_DIRS include
+    LIBRARIES apriltags
+   #  CATKIN_DEPENDS other_catkin_pkg
+    DEPENDS OpenCV EIGEN3
+)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
-# OpenCV for camera interface, looks for a symlink
-find_package(OpenCV)
 message(STATUS "OpenCV found at: ${OpenCV_INCLUDE_DIRS}")
-include_directories(${OpenCV_INCLUDE_DIRS})
-list(APPEND apriltags_LIBS ${OpenCV_LIBS})
 if( OpenCV_VERSION VERSION_EQUAL "3")
 	add_definitions("-DOPENCV3=1")
 	list(APPEND apriltags_DEFS "-DOPENCV3=1")
 endif()
 
-find_package(Eigen REQUIRED)
-include_directories(${EIGEN_INCLUDE_DIRS})
-list(APPEND apriltags_INCLUDES ${EIGEN_INCLUDE_DIRS} )
-
 # Camera drivers
-find_package(V4L2 REQUIRED)
-include_directories(${V4L2_INCLUDE_DIRS})
-list(APPEND apriltags_LIBS ${V4L2_LIBRARIES})
+# find_package(V4L2 REQUIRED)
 
-# AprilTag headers
-include_directories("${PROJECT_SOURCE_DIR}/include")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wall -Wno-unused-parameter -Wno-unused-function -O3 -fno-strict-overflow")
 
-set(INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include/apriltags")
-set(LIBRARY_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib")
-set(BINARY_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/bin")
+###########
+## Build ##
+###########
+include_directories(
+    include
+    ${OpenCV_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIR}
+)
 
-add_subdirectory(src)
-add_subdirectory(example)
+file(GLOB LIBRARY_SRC
+    "src/*.cc"
+)
 
-export(TARGETS apriltags
-    FILE "${PROJECT_BINARY_DIR}/apriltagsTargets.cmake")
+## Declare library
+add_library(${PROJECT_NAME} SHARED ${LIBRARY_SRC}
+)
+## Specify libraries to link a library or executable target against
+target_link_libraries(${PROJECT_NAME}
+  ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
+)
 
-configure_file(apriltagsConfig.cmake.in
-    "${PROJECT_BINARY_DIR}/apriltagsConfig.cmake" @ONLY)
+## Add cmake target dependencies of the library
+## as an example, code may need to be generated before libraries
+## either from message generation or dynamic reconfigure
+add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-configure_file(apriltagsConfigVersion.cmake.in
-    "${PROJECT_BINARY_DIR}/apriltagsConfigVersion.cmake" @ONLY)
+#############
+## Install ##
+#############
 
-install(FILES
-    "${PROJECT_BINARY_DIR}/apriltagsConfig.cmake"
-    "${PROJECT_BINARY_DIR}/apriltagsConfigVersion.cmake"
-    DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT dev)
+## Mark executables and/or libraries for installation
+install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}
+ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
-install(EXPORT apriltagsTargets
-    DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT dev)
+## Mark header files for installation
+install(DIRECTORY include/${PROJECT_NAME}/
+DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
