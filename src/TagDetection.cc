@@ -111,6 +111,43 @@ Eigen::Matrix4d TagDetection::getRelativeTransform(double tag_size, double fx, d
   return T;
 }
 
+void TagDetection::getRelativeQT(double tag_size, const cv::Matx33d &K,
+  const cv::Mat_<double> &D,
+  Eigen::Quaterniond &quat,
+  Eigen::Vector3d &trans) const {
+cv::Mat rvec, tvec;
+getRelativeRT(tag_size, K, D, rvec, tvec);
+trans = Eigen::Vector3d(tvec.at<double>(0), tvec.at<double>(1),
+tvec.at<double>(2));
+Eigen::Vector3d r(rvec.at<double>(0), rvec.at<double>(1), rvec.at<double>(2));
+// Copied from kr_math pose
+const double rn = r.norm();
+Eigen::Vector3d rnorm(0.0, 0.0, 0.0);
+if (rn > std::numeric_limits<double>::epsilon() * 10) {
+rnorm = r / rn;
+}
+quat = Eigen::AngleAxis<double>(rn, rnorm);
+}
+
+void TagDetection::getRelativeRT(double tag_size, const cv::Matx33d &K,
+  const cv::Mat_<double> &D, cv::Mat &rvec,
+  cv::Mat &tvec) const {
+float s = tag_size / 2.;
+// tag corners in tag frame, which we call object
+std::vector<cv::Point3f> p_obj;
+p_obj.push_back(cv::Point3f(-s, -s, 0));
+p_obj.push_back(cv::Point3f(s, -s, 0));
+p_obj.push_back(cv::Point3f(s, s, 0));
+p_obj.push_back(cv::Point3f(-s, s, 0));
+// pixels coordinates in image frame
+std::vector<cv::Point2f> p_img;
+p_img.push_back(cv::Point2f(p[0].first, p[0].second));
+p_img.push_back(cv::Point2f(p[1].first, p[1].second));
+p_img.push_back(cv::Point2f(p[2].first, p[2].second));
+p_img.push_back(cv::Point2f(p[3].first, p[3].second));
+cv::solvePnP(p_obj, p_img, K, D, rvec, tvec);
+}
+
 void TagDetection::getRelativeTranslationRotation(double tag_size, double fx, double fy, double px, double py,
                                                   Eigen::Vector3d& trans, Eigen::Matrix3d& rot) const {
   Eigen::Matrix4d T =
