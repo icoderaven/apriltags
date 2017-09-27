@@ -41,7 +41,7 @@ endif()
 # Camera drivers
 # find_package(V4L2 REQUIRED)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wall -Wno-unused-parameter -Wno-unused-function -O3 -fno-strict-overflow")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wall -Wno-unused-parameter -Wno-unused-function -O3 -Ofast -ffast-math -fno-strict-overflow")
 
 ###########
 ## Build ##
