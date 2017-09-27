@@ -9,6 +9,8 @@
 #include <ostream>
 #include <utility>
 
+
+
 namespace AprilTags {
 
 std::ostream& operator<<(std::ostream &os, const std::pair<float,float> &pt);

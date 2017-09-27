@@ -34,9 +34,9 @@ private:
 //
 // The least-squares solution to the system is v = inv(A'A)A'b
 
-  Eigen::Matrix4d A;
-  Eigen::Vector4d v;
-  Eigen::Vector4d b;
+  Eigen::Matrix4f A;
+  Eigen::Vector4f v;
+  Eigen::Vector4f b;
   int nobs;
   bool dirty;  //!< True if we've added an observation and need to recompute v
 };

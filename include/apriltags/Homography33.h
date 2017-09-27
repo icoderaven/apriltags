@@ -51,7 +51,7 @@ public:
 #endif
 
   //! Note that the returned H matrix does not reflect cxy.
-  Eigen::Matrix3d getH() const;
+  Eigen::Matrix3f getH() const;
 
   const std::pair<float,float> getCXY() const { return cxy; }
 
@@ -61,8 +61,8 @@ public:
 
 private:
   std::pair<float,float> cxy;
-  Eigen::Matrix<double,9,9> fA;
-  Eigen::Matrix3d H;
+  Eigen::Matrix<float,9,9> fA;
+  Eigen::Matrix3f H;
   bool valid;
 #ifdef STABLE_H
   std::vector< std::pair<float,float> > srcPts, dstPts;

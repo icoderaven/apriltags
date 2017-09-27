@@ -51,7 +51,7 @@ void GrayModel::compute() {
   dirty = false;
   if (nobs >= 6) {
     // make symmetric
-    Eigen::Matrix4d Ainv;
+    Eigen::Matrix4f Ainv;
     for (int i = 0; i < 4; i++)
       for (int j = i+1; j < 4; j++)
         A(j,i) = A(i,j);
@@ -59,7 +59,7 @@ void GrayModel::compute() {
     //    try {
     //      Ainv = A.inverse();
     bool invertible;
-    double det_unused;
+    float det_unused;
     A.computeInverseAndDetWithCheck(Ainv, det_unused, invertible);
     if (invertible) {
       v = Ainv * b;

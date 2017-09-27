@@ -13,7 +13,7 @@ Homography33::Homography33(const std::pair<float,float> &opticalCenter) : cxy(op
   H.setZero();
 }
 
-Eigen::Matrix3d Homography33::getH() const
+Eigen::Matrix3f Homography33::getH() const
 {
 //   compute();
   return H;
@@ -175,7 +175,7 @@ void Homography33::compute() {
   cv::Mat homography = cv::findHomography(sPts, dPts);
   for (int c=0; c<3; c++) {
     for (int r=0; r<3; r++) {
-      H(r,c) = homography.at<double>(r,c);
+      H(r,c) = homography.at<float>(r,c);
     }
   }
 

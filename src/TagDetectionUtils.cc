@@ -356,13 +356,13 @@ std::vector<TagDetection> decode_quads( const cv::Mat& filtered,
 
 		float c = std::cos(thisTagDetection.rotation*(float)M_PI/2);
 		float s = std::sin(thisTagDetection.rotation*(float)M_PI/2);
-		Eigen::Matrix3d R;
+		Eigen::Matrix3f R;
 		R.setZero();
 		R(0,0) = R(1,1) = c;
 		R(0,1) = -s;
 		R(1,0) = s;
 		R(2,2) = 1;
-		Eigen::Matrix3d tmp;
+		Eigen::Matrix3f tmp;
 		tmp = thisTagDetection.homography * R;
 		thisTagDetection.homography = tmp;
 

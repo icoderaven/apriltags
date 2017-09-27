@@ -73,10 +73,10 @@ bool TagDetection::overlapsTooMuch(const TagDetection &other) const {
   return ( dist < radius );
 }
 
-Eigen::Matrix4d TagDetection::getRelativeTransform(double tag_size, double fx, double fy, double px, double py) const {
+Eigen::Matrix4f TagDetection::getRelativeTransform(const float& tag_size, const float& fx, const float& fy, const float& px, const float& py) const {
   std::vector<cv::Point3f> objPts;
   std::vector<cv::Point2f> imgPts;
-  double s = tag_size/2.;
+  float s = tag_size*0.5f;
   objPts.push_back(cv::Point3f(-s,-s, 0));
   objPts.push_back(cv::Point3f( s,-s, 0));
   objPts.push_back(cv::Point3f( s, s, 0));
@@ -98,41 +98,41 @@ Eigen::Matrix4d TagDetection::getRelativeTransform(double tag_size, double fx, d
                            0,  0,  1);
   cv::Vec4f distParam(0,0,0,0); // all 0?
   cv::solvePnP(objPts, imgPts, cameraMatrix, distParam, rvec, tvec);
-  cv::Matx33d r;
+  cv::Matx33f r;
   cv::Rodrigues(rvec, r);
-  Eigen::Matrix3d wRo;
+  Eigen::Matrix3f wRo;
   wRo << r(0,0), r(0,1), r(0,2), r(1,0), r(1,1), r(1,2), r(2,0), r(2,1), r(2,2);
 
-  Eigen::Matrix4d T; 
+  Eigen::Matrix4f T; 
   T.topLeftCorner(3,3) = wRo;
-  T.col(3).head(3) << tvec.at<double>(0), tvec.at<double>(1), tvec.at<double>(2);
+  T.col(3).head(3) << tvec.at<float>(0), tvec.at<float>(1), tvec.at<float>(2);
   T.row(3) << 0,0,0,1;
 
   return T;
 }
 
-void TagDetection::getRelativeQT(double tag_size, const cv::Matx33d &K,
-  const cv::Mat_<double> &D,
-  Eigen::Quaterniond &quat,
-  Eigen::Vector3d &trans) const {
+void TagDetection::getRelativeQT(const float &tag_size, const cv::Matx33f &K,
+  const cv::Mat_<float> &D,
+  Eigen::Quaternionf &quat,
+  Eigen::Vector3f &trans) const {
 cv::Mat rvec, tvec;
 getRelativeRT(tag_size, K, D, rvec, tvec);
-trans = Eigen::Vector3d(tvec.at<double>(0), tvec.at<double>(1),
-tvec.at<double>(2));
-Eigen::Vector3d r(rvec.at<double>(0), rvec.at<double>(1), rvec.at<double>(2));
+trans = Eigen::Vector3f(tvec.at<float>(0), tvec.at<float>(1),
+tvec.at<float>(2));
+Eigen::Vector3f r(rvec.at<float>(0), rvec.at<float>(1), rvec.at<float>(2));
 // Copied from kr_math pose
-const double rn = r.norm();
-Eigen::Vector3d rnorm(0.0, 0.0, 0.0);
-if (rn > std::numeric_limits<double>::epsilon() * 10) {
+const float rn = r.norm();
+Eigen::Vector3f rnorm(0.0, 0.0, 0.0);
+if (rn > std::numeric_limits<float>::epsilon() * 10) {
 rnorm = r / rn;
 }
-quat = Eigen::AngleAxis<double>(rn, rnorm);
+quat = Eigen::AngleAxis<float>(rn, rnorm);
 }
 
-void TagDetection::getRelativeRT(double tag_size, const cv::Matx33d &K,
-  const cv::Mat_<double> &D, cv::Mat &rvec,
+void TagDetection::getRelativeRT(const float &tag_size, const cv::Matx33f &K,
+  const cv::Mat_<float> &D, cv::Mat &rvec,
   cv::Mat &tvec) const {
-float s = tag_size / 2.;
+float s = tag_size*0.5f;
 // tag corners in tag frame, which we call object
 std::vector<cv::Point3f> p_obj;
 p_obj.push_back(cv::Point3f(-s, -s, 0));
@@ -148,20 +148,20 @@ p_img.push_back(cv::Point2f(p[3].first, p[3].second));
 cv::solvePnP(p_obj, p_img, K, D, rvec, tvec);
 }
 
-void TagDetection::getRelativeTranslationRotation(double tag_size, double fx, double fy, double px, double py,
-                                                  Eigen::Vector3d& trans, Eigen::Matrix3d& rot) const {
-  Eigen::Matrix4d T =
+void TagDetection::getRelativeTranslationRotation(const float &tag_size, const float &fx, const float &fy, const float &px, const float &py,
+                                                  Eigen::Vector3f& trans, Eigen::Matrix3f& rot) const {
+  Eigen::Matrix4f T =
     getRelativeTransform(tag_size, fx, fy, px, py);
 
   // converting from camera frame (z forward, x right, y down) to
   // object frame (x forward, y left, z up)
-  Eigen::Matrix4d M;
+  Eigen::Matrix4f M;
   M <<
     0,  0, 1, 0,
     -1, 0, 0, 0,
     0, -1, 0, 0,
     0,  0, 0, 1;
-  Eigen::Matrix4d MT = M*T;
+  Eigen::Matrix4f MT = M*T;
   // translation vector from camera to the April tag
   trans = MT.col(3).head(3);
   // rotation from camera to the April tag
