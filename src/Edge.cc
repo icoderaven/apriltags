@@ -88,13 +88,13 @@ void Edge::mergeEdges(std::vector<Edge> &edges, UnionFindSimple &uf,
 
     // bshift will be a multiple of 2pi that aligns the spans of 'b' with 'a'
     // so that we can properly take the union of them.
-    float bshift = MathUtil::mod2pi((tmina+tmaxa)/2, (tminb+tmaxb)/2) - (tminb+tmaxb)/2;
+    float bshift = MathUtil::mod2pi((tmina+tmaxa)*0.5f, (tminb+tmaxb)*0.5f) - (tminb+tmaxb)*0.5f;
 
     float tminab = min(tmina, tminb + bshift);
     float tmaxab = max(tmaxa, tmaxb + bshift);
 
-    if (tmaxab-tminab > 2*(float)M_PI) // corner case that's probably not too useful to handle correctly, oh well.
-      tmaxab = tminab + 2*(float)M_PI;
+    if (tmaxab-tminab > 2.0f*(float)M_PI) // corner case that's probably not too useful to handle correctly, oh well.
+      tmaxab = tminab + 2.0f*(float)M_PI;
 
     float mminab = min(mmin[ida], mmin[idb]);
     float mmaxab = max(mmax[ida], mmax[idb]);

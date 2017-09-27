@@ -118,7 +118,7 @@ void extract_edges( const cv::Mat& filteredSeg, const cv::Mat& filteredMag,
 		}
 					
 		edges.resize(nEdges);
-		std::stable_sort(edges.begin(), edges.end());
+		std::sort(edges.begin(), edges.end());
 		Edge::mergeEdges(edges,uf,tmin,tmax,mmin,mmax);
 	}
 }
