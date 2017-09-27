@@ -62,18 +62,15 @@ void preprocess_image( const cv::Mat& orig, cv::Mat& filtered,
 	}
 
 	filteredTheta = cv::Mat( filteredSeg.size(), CV_32FC1 );
-	filteredMag = cv::Mat( filteredSeg.size(), CV_32FC1 );
+	filteredMag = cv::Mat( filteredSeg.size(), CV_32FC1);
 
-	for( int i = 1; i < filteredSeg.rows-1; i++ )
-	{
-		for( int j = 1; j < filteredSeg.cols-1; j++ )
-		{
-			float Ix = filteredSeg.at<float>(i,j+1) - filteredSeg.at<float>(i,j-1);
-			float Iy = filteredSeg.at<float>(i+1,j) - filteredSeg.at<float>(i-1,j);
-			filteredTheta.at<float>(i,j) = std::atan2(Iy, Ix);
-			filteredMag.at<float>(i,j) = Ix*Ix + Iy*Iy;
-		}	
-	}
+	cv::Mat Ix, Iy;
+	cv::Scharr(filteredSeg, Ix, CV_32FC1, 1, 0, 0.0625f);
+	cv::Scharr(filteredSeg, Iy, CV_32FC1, 0, 1, 0.0625f);
+	cv::phase(Ix, Iy, filteredTheta);
+	filteredMag = Ix.mul(Ix) + Iy.mul(Iy);
+	// cv::accumulateSquare(Ix, filteredMag);
+	// cv::accumulateSquare(Iy, filteredMag);
 }
 
 void extract_edges( const cv::Mat& filteredSeg, const cv::Mat& filteredMag,
@@ -167,7 +164,7 @@ void fit_segments( const cv::Mat& filteredSeg, const cv::Mat& filteredMag,
 		float dy = gseg.getP1().second - gseg.getP0().second;
 		float dx = gseg.getP1().first - gseg.getP0().first;
 
-		float tmpTheta = std::atan2(dy,dx);
+		float tmpTheta = cv::fastAtan2(dy,dx);
 
 		seg.setTheta(tmpTheta);
 		seg.setLength(length);

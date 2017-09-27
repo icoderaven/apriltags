@@ -38,7 +38,7 @@ float TagDetection::getXYOrientation() const {
   // and then compute orientation from that.
   std::pair<float,float> p0 = interpolate(-1,-1);   // lower left corner of tag
   std::pair<float,float> p1 = interpolate(1,-1);    // lower right corner of tag
-  float orient = atan2(p1.second - p0.second, p1.first - p0.first);
+  float orient = cv::fastAtan2(p1.second - p0.second, p1.first - p0.first);
   return ! std::isnan(float(orient)) ? orient : 0.;
 }
 
