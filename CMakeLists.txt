@@ -25,10 +25,9 @@ add_definitions(-std=c++11)
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-    INCLUDE_DIRS include
+    INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIR}
     LIBRARIES apriltags
-   #  CATKIN_DEPENDS other_catkin_pkg
-    DEPENDS OpenCV EIGEN3
+    DEPENDS OpenCV
 )
 
 
